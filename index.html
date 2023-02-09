@@ -4,19 +4,38 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
     <title>Document</title>
 </head>
 <body>
 
-    <input type="file" id="fileInput"  onchange="handleFile(event)">
-    <button onclick="regroup()">Regroup</button>
+    <fieldset class="container border px-5 my-5">
+        <legend>File Input and Regroup Button</legend>
+        <div class="row justify-content-between">
+            <div class="form-group">
+                <input type="file" id="fileInput" class="form-control-file" onchange="handleFile(event)">
+            </div>
+            <div class="form-group">
+                <button class="btn btn-primary d-none" id="clean-file" onclick="regroup()">CLean file</button>
+            </div>
+            <div class="form-group">
+                <button class="btn btn-primary d-none" id="download-excel" onclick="download()">Download</button>
+            </div>
+        </div>
+    </fieldset>
     
-    <table id="table" border="1">
-        <thead id="tableHead">
-        </thead>
-        <tbody id="tableBody">
-        </tbody>
-    </table>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.15.5/xlsx.full.min.js"></script>
-<script src="app.js"></script>
+    <div class="container-fluid">
+        <table class="table table-striped" id="data-table">
+            <thead id="tableHead" class="thead-dark">
+            </thead>
+            <tbody id="tableBody">
+            </tbody>
+        </table>    
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.15.5/xlsx.full.min.js"></script>
+    <script src="app.js"></script>
 </html>
