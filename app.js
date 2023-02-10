@@ -1,34 +1,49 @@
 function handleFile(e) {
-  var files = e.target.files, f = files[0];
-  var reader = new FileReader();
-  reader.onload = function(e) {
-    var data = new Uint8Array(e.target.result);
-    var workbook = XLSX.read(data, {type: 'array'});
-    var firstSheetName = workbook.SheetNames[0];
-    var worksheet = workbook.Sheets[firstSheetName];
-    var json = XLSX.utils.sheet_to_json(worksheet);
-
-    var tableHead = document.getElementById("tableHead");
-    tableHead.innerHTML = "";
-    var headers = Object.keys(json[0]);
-    var headerRow = tableHead.insertRow();
-    for (var i = 0; i < headers.length; i++) {
-      var headerCell = headerRow.insertCell();
-      headerCell.innerHTML = headers[i];
-    }
-
-    var tableBody = document.getElementById("tableBody");
-    tableBody.innerHTML = "";
-    for (var i = 0; i < json.length; i++) {
-      var row = tableBody.insertRow();
-      for (var j = 0; j < headers.length; j++) {
-        var cell = row.insertCell();
-        cell.innerHTML = json[i][headers[j]];
+    var files = e.target.files, f = files[0];
+    var extension = f.name.split('.').pop();
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var data = new Uint8Array(e.target.result);
+      var workbook = XLSX.read(data, {type: 'array'});
+      var firstSheetName = workbook.SheetNames[0];
+      var worksheet = workbook.Sheets[firstSheetName];
+      
+      var range = XLSX.utils.decode_range(worksheet['!ref']);
+      var startRow = prompt("Start from row: ");
+      if (startRow == null || startRow == "") {
+        alert("You must enter a number");
+        location.reload();
       }
-    }
-    $("#clean-file").removeClass("d-none");
-  };
-  reader.readAsArrayBuffer(f);
+      localStorage.setItem("startRow", startRow);
+      range.s.r = startRow - 1;
+      var subSheet = {};
+      subSheet[firstSheetName] = worksheet;
+      subSheet[firstSheetName]['!ref'] = XLSX.utils.encode_range(range);
+      var json = XLSX.utils.sheet_to_json(subSheet[firstSheetName]);
+
+      var tableHead = document.getElementById("tableHead");
+      tableHead.innerHTML = "";
+      var headers = Object.keys(json[0]);
+      var headerRow = tableHead.insertRow();
+      for (var i = 0; i < headers.length; i++) {
+        var headerCell = headerRow.insertCell();
+        headerCell.innerHTML = headers[i];
+        headerCell.style.backgroundColor = "green";
+        headerCell.style.color = "white";
+      }
+
+      var tableBody = document.getElementById("tableBody");
+      tableBody.innerHTML = "";
+      for (var i = 0; i < json.length; i++) {
+        var row = tableBody.insertRow();
+        for (var j = 0; j < headers.length; j++) {
+          var cell = row.insertCell();
+          cell.innerHTML = json[i][headers[j]];
+        }
+      }
+      $("#clean-file").removeClass("d-none");
+    };
+    reader.readAsArrayBuffer(f);
 }
 
 
@@ -38,10 +53,17 @@ function regroup() {
   var reader = new FileReader();
   reader.onload = function(e) {
     var data = new Uint8Array(e.target.result);
-    var workbook = XLSX.read(data, {type: 'array'});
-    var firstSheetName = workbook.SheetNames[0];
-    var worksheet = workbook.Sheets[firstSheetName];
-    var json = XLSX.utils.sheet_to_json(worksheet);
+      var workbook = XLSX.read(data, {type: 'array'});
+      var firstSheetName = workbook.SheetNames[0];
+      var worksheet = workbook.Sheets[firstSheetName];
+      
+      var range = XLSX.utils.decode_range(worksheet['!ref']);
+      var startRow = localStorage.getItem("startRow");
+      range.s.r = startRow - 1;
+      var subSheet = {};
+      subSheet[firstSheetName] = worksheet;
+      subSheet[firstSheetName]['!ref'] = XLSX.utils.encode_range(range);
+      var json = XLSX.utils.sheet_to_json(subSheet[firstSheetName]);
 
     var tableHead = document.getElementById("tableHead");
     tableHead.innerHTML = "";
@@ -50,6 +72,8 @@ function regroup() {
     for (var i = 0; i < headers.length; i++) {
       var headerCell = headerRow.insertCell();
       headerCell.innerHTML = headers[i];
+      headerCell.style.backgroundColor = "green";
+      headerCell.style.color = "white";
     }
 
     let consecutive = true;
@@ -90,10 +114,13 @@ function download () {
   var table = document.getElementById("data-table");
   var data = [];
   for (var i = 0, row; row = table.rows[i]; i++) {
-      data[i] = [];
-      for (var j = 0, col; col = row.cells[j]; j++) {
-          data[i][j] = col.innerHTML;
-      }
+    var rowData = [];
+    for (var j = 0, col; col = row.cells[j]; j++) {
+      rowData[j] = col.innerHTML;
+    }
+    if (rowData.join('').trim().length > 0) {
+      data.push(rowData);
+    }
   }
   
   var wb = XLSX.utils.book_new();
